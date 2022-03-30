@@ -144,10 +144,6 @@ Source56:       openafs.CellAlias
 Source57:       openafs.ThisCell
 Source58:       openafs.cacheinfo
 Source99:       openafs.changes
-# PATCH-SUSE-SPECIFIC use proper directory layout
-Patch3:         dir_layout.patch
-# PATCH-FIX-UPSTREAM make configure detect ncurses 6 correctly
-Patch4:         openafs-1.8.x.ncurses6.patch
 
 #
 #	GENERAL BuildRequires and Requires
@@ -397,8 +393,6 @@ for src_file in %{S:0}  %{S:1}; do
 done
 
 %setup -q -n openafs-%{upstream_version} -T -b 0 -b 1
-%patch3 -p1
-%patch4 -p1
 
 ./regen.sh
 
@@ -437,7 +431,8 @@ export CFLAGS="$RPM_OPT_FLAGS -fno-strict-aliasing -fPIC -fcommon"
 export KRB5LIBS='-lcom_err -lkrb5'
 export PATH_KRB5_CONFIG=%{krb5_config}
 
-%configure \
+#afslogsdir=/var/log/openafs ./configure \
+afslogsdir=/var/log/openafs; export afslogsdir; %configure \
 %if %{build_transarc}
     --enable-transarc-paths \
 %else
