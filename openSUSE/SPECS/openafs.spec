@@ -266,7 +266,7 @@ Group:          System/Filesystems
 Requires:       bison
 Requires:       flex
 Requires:       gcc
-Requires:       kernel-devel = %{?kernelvers}
+Requires:       kernel-devel
 Requires:       %{name}-devel = %{version}
 Provides:       %{name}-kernel = %{version}
 Provides:       %{name}-kmp
@@ -288,7 +288,7 @@ Provides:       %{name}-kernel = %{version}
 Provides:       %{name}-kmp = %{version}
 Requires(pre):  %{name}-devel = %{version}
 Requires(pre):  %{name}-kernel-source = %{version}
-Requires(pre):  kernel-devel = %{?kernelvers}
+Requires(pre):  kernel-devel
 Requires(pre):  dkms
 Requires(pre):  flex
 Requires(pre):  make
