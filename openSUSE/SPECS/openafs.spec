@@ -97,8 +97,8 @@
 
 # update with the version in the tar files (e.g. 1.8.8.1-8-gl18924 )
 %define upstream_version %{tarversion}
-%define package_version %{?afsversion}%{!?afsversion:1.0}
-%define release_version %{?afsrelease}%{!?afsrelease:sna}
+%define package_version %{?afsversion}%{!?afsversion:%{upstream_version}}
+%define release_version %{?release}%{!?release:1}
 
 Name:           openafs
 
