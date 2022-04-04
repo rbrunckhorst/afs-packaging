@@ -143,6 +143,7 @@ Source55:       openafs.SuidCells
 Source56:       openafs.CellAlias
 Source57:       openafs.ThisCell
 Source58:       openafs.cacheinfo
+Source59:       openafs.cacheinfo.transarc
 Source99:       openafs.changes
 
 #
@@ -522,7 +523,11 @@ cp -a src/afsd/CellServDB %{buildroot}/%{viceetcdir}/CellServDB
 cp -a %{S:55} %{buildroot}/%{viceetcdir}/SuidCells
 cp -a %{S:56} %{buildroot}/%{viceetcdir}/CellAlias
 cp -a %{S:57} %{buildroot}/%{viceetcdir}/ThisCell
+%if %{build_transarc}
+cp -a %{S:59} %{buildroot}/%{viceetcdir}/cacheinfo
+%else
 cp -a %{S:58} %{buildroot}/%{viceetcdir}/cacheinfo
+%endif
 cp -a src/afs/afszcm.cat %{buildroot}%{_datadir}/openafs/C
 install -m 644 %{S:27} %{buildroot}/%{_fillupdir}/sysconfig.openafs-client
 %if 0%{?sle_version} > 150000 
