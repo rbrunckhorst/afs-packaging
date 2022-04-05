@@ -270,7 +270,7 @@ Requires:       gcc
 Requires:       kernel-devel
 Requires:       %{name}-devel = %{version}
 Provides:       %{name}-kernel = %{version}
-Provides:       %{name}-kmp
+Provides:       %{name}-kmp = %{version}
 
 %description kernel-source
 The AFS distributed filesystem.  AFS is a distributed filesystem
@@ -327,7 +327,7 @@ It does not offer authentication etc.
 Summary:        OpenAFS File System Client
 Group:          System/Filesystems
 Requires:       %{name} = %{version}
-Requires:       %{name}-kmp
+Requires:       %{name}-kmp >= %{version}
 Requires:       krb5-client
 
 %description client
