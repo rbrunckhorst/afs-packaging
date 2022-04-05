@@ -103,7 +103,7 @@
 Name:           openafs
 
 Version:        %{package_version}
-Release:        %{release_version}
+Release:        %{release_version}%{?dist}
 Summary:        OpenAFS Distributed File System
 License:        IPL-1.0
 Group:          System/Filesystems
