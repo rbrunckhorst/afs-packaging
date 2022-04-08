@@ -30,7 +30,6 @@
 # Determine presence of rpmbuild command line --define arguments and set
 # defaults if not present.
 #
-%define build_transarc_on_cmdline %{?build_transarc:1}%{!?build_transarc:0}
 %define build_userspace_on_cmdline %{?build_userspace:1}%{!?build_userspace:0}
 %define build_kernel_modules_on_cmdline %{?build_kernel_modules:1}%{!?build_kernel_modules:0}
 %define build_dkmspkg_on_cmdline %{?build_dkmspkg:1}%{!?build_dkmspkg:0}
@@ -40,11 +39,6 @@
 
 # build authlibs
 %define build_authlibs 1
-
-# build transarc paths
-%if !%{build_transarc_on_cmdline}
-%define build_transarc 0
-%endif
 
 # build userspace
 %if !%{build_userspace_on_cmdline}
@@ -71,22 +65,12 @@
 #
 # package internal directories
 #
-%if %{build_transarc}
-%define filelayout        transarc
-%define afslogsdir        /usr/afs/logs
-%define afsconfdir        /usr/afs/etc
-%define viceetcdir        /usr/vice/etc
-%define vicecachedir      /usr/vice/cache
-%define afslocaldir       /usr/afs/local
-%define afssrvdir         /usr/afs/bin
-%else
 %define filelayout        fhs
 %define afslogsdir        /var/log/openafs
 %define afsconfdir        /etc/openafs/server
 %define viceetcdir        /etc/openafs
 %define vicecachedir      /var/cache/openafs
 %define afslocaldir       /var/lib/openafs
-%endif
 
 %ifarch ppc64le ppc64 %{arm}
 %define build_kernel_modules 0
@@ -143,7 +127,6 @@ Source55:       openafs.SuidCells
 Source56:       openafs.CellAlias
 Source57:       openafs.ThisCell
 Source58:       openafs.cacheinfo
-Source59:       openafs.cacheinfo.transarc
 Source99:       openafs.changes
 
 #
@@ -342,6 +325,42 @@ In addition, among its features are authentication, encryption,
 caching, disconnected operations, replication for higher availability
 and load balancing, and ACLs. This package contains the OpenAFS client.
 
+%package client-transarc
+Summary:        OpenAFS client transarc compatibility symlinks
+Group:          System/Filesystems
+Requires:       %{name} = %{version}, %{name}-client = %{version}
+
+%description client-transarc
+AFS is a cross-platform distributed file system product pioneered at
+Carnegie Mellon University and supported and developed as a product by
+Transarc Corporation (now IBM Pittsburgh Labs). It offers a
+client-server architecture for file sharing, providing location
+independence, scalability, and transparent migration capabilities for
+data.
+
+This package provides compatibility symlinks for transarc layout.
+It is completely optional, and is only necessary if transarc layout
+is needed. It will create symlinks only for directories.
+This package is for the client part (/usr/vice/)
+
+%package server-transarc
+Summary:        OpenAFS server transarc compatibility symlinks
+Group:          System/Filesystems
+Requires:       %{name} = %{version}, %{name}-server = %{version}
+
+%description server-transarc
+AFS is a cross-platform distributed file system product pioneered at
+Carnegie Mellon University and supported and developed as a product by
+Transarc Corporation (now IBM Pittsburgh Labs). It offers a
+client-server architecture for file sharing, providing location
+independence, scalability, and transparent migration capabilities for
+data.
+
+This package provides compatibility symlinks for transarc layout.
+It is completely optional, and is only necessary if transarc layout
+is needed. It will create symlinks only for directories.
+This package is for the server part (/usr/vice/)
+
 %endif
 
 %if %{build_kernel_modules}
@@ -434,11 +453,7 @@ export PATH_KRB5_CONFIG=%{krb5_config}
 
 #afslogsdir=/var/log/openafs ./configure \
 afslogsdir=/var/log/openafs; export afslogsdir; %configure \
-%if %{build_transarc}
-    --enable-transarc-paths \
-%else
     --disable-transarc-paths \
-%endif
     --disable-pam \
     --disable-strip-binaries \
     --includedir=%{_includedir}/openafs \
@@ -475,11 +490,7 @@ for flavor in %flavors_to_build; do
     pushd obj/$flavor
     find . -name "*.c" -exec sed -i '/MODULE_LICENSE(/a MODULE_INFO(retpoline, "Y");' "{}" "+"
     ./configure  --with-linux-kernel-build=/usr/src/linux-obj/%{_target_cpu}/$flavor --with-linux-kernel-headers=/usr/src/linux \
-%if %{build_transarc}
-        --enable-transarc-paths --without-swig
-%else
-        --disable-transarc-paths --without-swig
-%endif
+    --disable-transarc-paths --without-swig
     export EXTRA_CFLAGS='-DVERSION=\"%version\"'
     export LINUX_MAKE_ARCH="ARCH=%{_arch}"
     make
@@ -513,9 +524,8 @@ mkdir -p %{buildroot}%{_datadir}/openafs/C
 mkdir -p %{buildroot}/%{afsconfdir}
 mkdir -p %{buildroot}/%{afslocaldir}
 mkdir -p %{buildroot}/%{_sbindir}
-%if %{build_transarc}
-mkdir -p %{buildroot}/%{_libdir}/openafs
-%endif
+mkdir -p %{buildroot}/usr/vice
+mkdir -p %{buildroot}/usr/afs
 
 #
 # client
@@ -523,11 +533,7 @@ cp -a src/afsd/CellServDB %{buildroot}/%{viceetcdir}/CellServDB
 cp -a %{S:55} %{buildroot}/%{viceetcdir}/SuidCells
 cp -a %{S:56} %{buildroot}/%{viceetcdir}/CellAlias
 cp -a %{S:57} %{buildroot}/%{viceetcdir}/ThisCell
-%if %{build_transarc}
-cp -a %{S:59} %{buildroot}/%{viceetcdir}/cacheinfo
-%else
 cp -a %{S:58} %{buildroot}/%{viceetcdir}/cacheinfo
-%endif
 cp -a src/afs/afszcm.cat %{buildroot}%{_datadir}/openafs/C
 install -m 644 %{S:27} %{buildroot}/%{_fillupdir}/sysconfig.openafs-client
 %if 0%{?sle_version} > 150000 
@@ -590,46 +596,11 @@ cp -a %{S:19} ChangeLog
 mkdir -p %{buildroot}/etc/ld.so.conf.d
 echo %{_libdir}/openafs > %{buildroot}/etc/ld.so.conf.d/openafs.conf
 
-%if %{build_transarc}
-# Relocate bins.
-mv %{buildroot}/%{afssrvdir}/asetkey %{buildroot}/%{_sbindir}/asetkey
-mv %{buildroot}/%{afssrvdir}/bos %{buildroot}/%{_sbindir}/bos
-mv %{buildroot}/%{afssrvdir}/akeyconvert %{buildroot}/%{_sbindir}/akeyconvert
-mv %{buildroot}/%{afssrvdir}/udebug %{buildroot}/%{_sbindir}/udebug
-
-# Move from transarc dirs to modern location.
-mv %{buildroot}/%{afssrvdir}/buserver %{buildroot}/%{_libexecdir}/openafs/buserver
-mv %{buildroot}/%{afssrvdir}/dafileserver %{buildroot}/%{_libexecdir}/openafs/dafileserver
-mv %{buildroot}/%{afssrvdir}/dasalvager %{buildroot}/%{_libexecdir}/openafs/dasalvager
-mv %{buildroot}/%{afssrvdir}/davolserver %{buildroot}/%{_libexecdir}/openafs/davolserver
-mv %{buildroot}/%{afssrvdir}/fileserver %{buildroot}/%{_libexecdir}/openafs/fileserver
-mv %{buildroot}/%{afssrvdir}/ptserver %{buildroot}/%{_libexecdir}/openafs/ptserver
-mv %{buildroot}/%{afssrvdir}/salvager %{buildroot}/%{_libexecdir}/openafs/salvager
-mv %{buildroot}/%{afssrvdir}/salvageserver %{buildroot}/%{_libexecdir}/openafs/salvageserver
-mv %{buildroot}/%{afssrvdir}/upclient %{buildroot}/%{_libexecdir}/openafs/upclient
-mv %{buildroot}/%{afssrvdir}/upserver %{buildroot}/%{_libexecdir}/openafs/upserver
-mv %{buildroot}/%{afssrvdir}/vlserver %{buildroot}/%{_libexecdir}/openafs/vlserver
-mv %{buildroot}/%{afssrvdir}/volserver %{buildroot}/%{_libexecdir}/openafs/volserver
-
-mv %{buildroot}/%{afssrvdir}/bos_util %{buildroot}/%{_sbindir}/bos_util
-mv %{buildroot}/%{afssrvdir}/bosserver %{buildroot}/%{_sbindir}/bosserver
-mv %{buildroot}/%{afssrvdir}/dafssync-debug %{buildroot}/%{_sbindir}/dafssync-debug
-mv %{buildroot}/%{afssrvdir}/fssync-debug %{buildroot}/%{_sbindir}/fssync-debug
-mv %{buildroot}/%{afssrvdir}/prdb_check %{buildroot}/%{_sbindir}/prdb_check
-mv %{buildroot}/%{afssrvdir}/pt_util %{buildroot}/%{_sbindir}/pt_util
-mv %{buildroot}/%{afssrvdir}/salvsync-debug %{buildroot}/%{_sbindir}/salvsync-debug
-mv %{buildroot}/%{afssrvdir}/state_analyzer %{buildroot}/%{_sbindir}/state_analyzer
-mv %{buildroot}/%{afssrvdir}/vldb_check %{buildroot}/%{_sbindir}/vldb_check
-mv %{buildroot}/%{afssrvdir}/vldb_convert %{buildroot}/%{_sbindir}/vldb_convert
-mv %{buildroot}/%{afssrvdir}/volinfo %{buildroot}/%{_sbindir}/volinfo
-mv %{buildroot}/%{afssrvdir}/volscan %{buildroot}/%{_sbindir}/volscan
-%else
 # move some bin to sbin
 mv %{buildroot}/%{_bindir}/asetkey %{buildroot}/%{_sbindir}/asetkey
 mv %{buildroot}/%{_bindir}/bos %{buildroot}/%{_sbindir}/bos
 mv %{buildroot}/%{_bindir}/akeyconvert %{buildroot}/%{_sbindir}/akeyconvert
 mv %{buildroot}/%{_bindir}/udebug %{buildroot}/%{_sbindir}/udebug
-%endif
 
 # avoid conflicts with other packages by adding the prefix afs_ to filenames
 mv %{buildroot}%{_bindir}/scout %{buildroot}%{_bindir}/afs_scout
@@ -673,6 +644,22 @@ install -D -m 644 %{S:46} %{buildroot}%{_prefix}/lib/firewalld/services/
 install -D -m 644 %{S:47} %{buildroot}%{_prefix}/lib/firewalld/services/
 %endif
 
+
+#
+# client-transarc
+
+mkdir -p %{buildroot}/usr/vice
+ln -s %{viceetcdir} %{buildroot}/usr/vice/etc
+ln -s %{vicecachedir} %{buildroot}/usr/vice/cache
+
+#
+# server-transarc
+
+mkdir -p %{buildroot}/usr/afs
+ln -s %{afslogsdir} %{buildroot}/usr/afs/logs
+ln -s %{afsconfdir} %{buildroot}/usr/afs/etc
+ln -s %{viceetcdir} %{buildroot}/usr/afs/local
+ln -s %{afslocaldir}/db %{buildroot}/usr/afs/db
 
 #
 # general cleanup
@@ -719,33 +706,6 @@ cd $OLD_PWD
 
 # replace duplicates by symlinks
 %fdupes -s %{buildroot}/usr
-
-%if %{build_transarc}
-#
-# Fix up binary file paths.
-#
-
-# Remove symlinks to /usr/afs/bin/*
-rm -f %{buildroot}/%{_bindir}/fs
-rm -f %{buildroot}/%{_bindir}/pts
-rm -f %{buildroot}/%{_bindir}/tokens
-rm -f %{buildroot}/%{_bindir}/tokens.krb
-rm -f %{buildroot}/%{_bindir}/vos
-
-# Move files into place.
-mv %{buildroot}/%{afssrvdir}/fs %{buildroot}/%{_bindir}/fs
-mv %{buildroot}/%{afssrvdir}/pts %{buildroot}/%{_bindir}/pts
-mv %{buildroot}/%{afssrvdir}/tokens %{buildroot}/%{_bindir}/tokens
-mv %{buildroot}/%{afssrvdir}/tokens.krb %{buildroot}/%{_bindir}/tokens.krb
-mv %{buildroot}/%{afssrvdir}/vos %{buildroot}/%{_sbindir}/vos
-
-# Relocate these from bin to sbin.
-mv %{buildroot}/%{_bindir}/bos %{buildroot}/%{_sbindir}/bos
-mv %{buildroot}/%{_bindir}/udebug %{buildroot}/%{_sbindir}/udebug
-
-# Remove unrefernced files.
-rm -f %{buildroot}/usr/vice/etc/C/afszcm.cat
-%endif
 
 %endif
 
@@ -912,6 +872,8 @@ dkms remove -m %{name} -v %{version} --rpm_safe_upgrade --all ||:
 %postun authlibs
 %endif
 
+
+
 %endif
 #
 #	FILES
@@ -1050,11 +1012,7 @@ dkms remove -m %{name} -v %{version} --rpm_safe_upgrade --all ||:
 %defattr(-,root,root)
 %attr(770,root,root) %dir %{afslocaldir}
 %attr(775,root,root) %dir %{afslogsdir}
-%if %{build_transarc}
-%config %{afsconfdir}
-%else
 %config %{viceetcdir}/server
-%endif
 %doc %{_mandir}/man5/AuthLog.5.gz
 %doc %{_mandir}/man5/AuthLog.dir.5.gz
 %doc %{_mandir}/man5/BackupLog.5.gz
@@ -1189,6 +1147,18 @@ dkms remove -m %{name} -v %{version} --rpm_safe_upgrade --all ||:
 %{_libdir}/openafs/libafsrpc.so
 %{_libdir}/openafs/libkopenafs.so
 %endif
+
+%files client-transarc
+%defattr(-,root,root)
+%{_prefix}/vice/etc
+%{_prefix}/vice/cache
+
+%files server-transarc
+%defattr(-,root,root)
+%{_prefix}/afs/etc
+%{_prefix}/afs/logs
+%{_prefix}/afs/local
+%{_prefix}/afs/db
 
 %endif
 #
