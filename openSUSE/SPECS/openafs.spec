@@ -359,7 +359,7 @@ data.
 This package provides compatibility symlinks for transarc layout.
 It is completely optional, and is only necessary if transarc layout
 is needed. It will create symlinks only for directories.
-This package is for the server part (/usr/vice/)
+This package is for the server part (/usr/afs/)
 
 %endif
 
