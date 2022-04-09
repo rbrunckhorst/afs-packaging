@@ -663,6 +663,14 @@ ln -s %{viceetcdir} %{buildroot}/usr/afs/local
 ln -s %{afslocaldir}/db %{buildroot}/usr/afs/db
 
 #
+# client|server-compat
+
+%dnl ln -s %{_libdir}/openafs/libafshcrypto.so.2.0.0 %{buildroot}/%{_libdir}/libafshcrypto.so.2.0.0
+%dnl ln -s %{_libdir}/openafs/libafshcrypto.so.2 %{buildroot}/%{_libdir}/libafshcrypto.so.2
+%dnl ln -s %{_libdir}/openafs/librokenafs.so.2.0.0 %{buildroot}/%{_libdir}/librokenafs.so.2.0.0
+%dnl ln -s %{_libdir}/openafs/librokenafs.so.2 %{buildroot}/%{_libdir}/librokenafs.so.2
+
+#
 # general cleanup
 #
 
@@ -1153,6 +1161,8 @@ dkms remove -m %{name} -v %{version} --rpm_safe_upgrade --all ||:
 %defattr(-,root,root)
 %{_prefix}/vice/etc
 %{_prefix}/vice/cache
+%dnl %{_libdir}/librokenafs.so.*
+%dnl %{_libdir}/libafshcrypto.so.*
 
 %files server-compat
 %defattr(-,root,root)
@@ -1161,6 +1171,8 @@ dkms remove -m %{name} -v %{version} --rpm_safe_upgrade --all ||:
 %{_prefix}/afs/logs
 %{_prefix}/afs/local
 %{_prefix}/afs/db
+%dnl %{_libdir}/librokenafs.so.*
+%dnl %{_libdir}/libafshcrypto.so.*
 
 %endif
 #
