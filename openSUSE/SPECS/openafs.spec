@@ -387,7 +387,7 @@ the openafs package.
 : @@@ package-release:    %{release_version}
 : @@@ file-layout:	  %{filelayout}
 : @@@ lib dir:    	  %{_libdir}
-: @@@ libexec dir:    	  %{libexecdir}
+: @@@ libexec dir:    	  %{_libexecdir}
 : @@@ bin dir:    	  %{_bindir}
 : @@@ sbin dir:    	  %{_sbindir}
 : @@@ include dir:    	  %{includedir}
@@ -656,6 +656,7 @@ ln -s %{vicecachedir} %{buildroot}/usr/vice/cache
 # server-compat
 
 mkdir -p %{buildroot}/usr/afs
+ln -s %{_libexecdir}/openafs %{buildroot}/usr/afs/bin
 ln -s %{afslogsdir} %{buildroot}/usr/afs/logs
 ln -s %{afsconfdir} %{buildroot}/usr/afs/etc
 ln -s %{viceetcdir} %{buildroot}/usr/afs/local
@@ -1155,6 +1156,7 @@ dkms remove -m %{name} -v %{version} --rpm_safe_upgrade --all ||:
 
 %files server-compat
 %defattr(-,root,root)
+%{_prefix}/afs/bin
 %{_prefix}/afs/etc
 %{_prefix}/afs/logs
 %{_prefix}/afs/local
