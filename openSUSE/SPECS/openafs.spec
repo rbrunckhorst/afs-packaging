@@ -32,7 +32,6 @@
 #
 %define build_userspace_on_cmdline %{?build_userspace:1}%{!?build_userspace:0}
 %define build_kernel_modules_on_cmdline %{?build_kernel_modules:1}%{!?build_kernel_modules:0}
-%define build_dkmspkg_on_cmdline %{?build_dkmspkg:1}%{!?build_dkmspkg:0}
 %define kernelvers %{?kernvers}
 
 # package-wide definitions here
@@ -48,11 +47,6 @@
 # build kernel modules
 %if !%{build_kernel_modules_on_cmdline}
 %define build_kernel_modules 1
-%endif
-
-# build dkmspkg_
-%if !%{build_dkmspkg_on_cmdline}
-%define build_dkmspkg 1
 %endif
 
 # flag for firewalld, only required for SLE-12
@@ -264,7 +258,6 @@ administrative management.
 This package provides the source code to build your own AFS kernel
 module.
 
-%if %{build_dkmspkg}
 %package -n dkms-%{name}
 Summary:        DKMS-ready kernel source for AFS distributed filesystem
 Group:          Development/Kernel
@@ -286,8 +279,6 @@ administrative management.
 
 This package provides the source code to allow DKMS to build an
 AFS kernel module.
-%endif
-
 
 %package fuse_client
 Summary:        OpenAFS FUSE File System Client
@@ -395,7 +386,6 @@ the openafs package.
 : @@@ man dir:    	  %{_mandir}
 : @@@ build userspace:    %{build_userspace}
 : @@@ build modules:      %{build_kernel_modules}
-: @@@ build dkmspkg:      %{build_dkmspkg}
 : @@@ architecture:       %{_arch}
 : @@@ target cpu:         %{_target_cpu}
 : @@@
@@ -847,7 +837,6 @@ else
     echo and/or follow the instructions found on http://www.openafs.org to install an openafs-client. 
 fi
 
-%if %{build_dkmspkg}
 %post -n dkms-%{name}
 dkms add -m %{name} -v %{version} --rpm_safe_upgrade
 dkms build -m %{name} -v %{version} --rpm_safe_upgrade
@@ -855,7 +844,6 @@ dkms install -m %{name} -v %{version} --rpm_safe_upgrade
 
 %preun -n dkms-%{name}
 dkms remove -m %{name} -v %{version} --rpm_safe_upgrade --all ||:
-%endif
 
 %preun server
 %service_del_preun openafs-server.service
@@ -1131,11 +1119,9 @@ dkms remove -m %{name} -v %{version} --rpm_safe_upgrade --all ||:
 %dir %{perl_vendorlib}/AFS
 %{perl_vendorlib}/AFS/ukernel.pm
 
-%if %{build_dkmspkg}
 %files -n dkms-%{name}
 %defattr(-,root,root)
 /usr/src/%{name}-%{version}
-%endif
 
 %files  kernel-source 
 %defattr(-,root,root)
