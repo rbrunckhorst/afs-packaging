@@ -325,12 +325,12 @@ In addition, among its features are authentication, encryption,
 caching, disconnected operations, replication for higher availability
 and load balancing, and ACLs. This package contains the OpenAFS client.
 
-%package client-transarc
-Summary:        OpenAFS client transarc compatibility symlinks
+%package client-compat
+Summary:        OpenAFS client compatibility symlinks
 Group:          System/Filesystems
 Requires:       %{name} = %{version}, %{name}-client = %{version}
 
-%description client-transarc
+%description client-compat
 AFS is a cross-platform distributed file system product pioneered at
 Carnegie Mellon University and supported and developed as a product by
 Transarc Corporation (now IBM Pittsburgh Labs). It offers a
@@ -338,17 +338,17 @@ client-server architecture for file sharing, providing location
 independence, scalability, and transparent migration capabilities for
 data.
 
-This package provides compatibility symlinks for transarc layout.
-It is completely optional, and is only necessary if transarc layout
+This package provides compatibility symlinks for legacy layout.
+It is completely optional, and is only necessary if legacy layout
 is needed. It will create symlinks only for directories.
-This package is for the client part (/usr/vice/)
+This package is for the legacy client part (/usr/vice/)
 
-%package server-transarc
-Summary:        OpenAFS server transarc compatibility symlinks
+%package server-compat
+Summary:        OpenAFS server compatibility symlinks
 Group:          System/Filesystems
 Requires:       %{name} = %{version}, %{name}-server = %{version}
 
-%description server-transarc
+%description server-compat
 AFS is a cross-platform distributed file system product pioneered at
 Carnegie Mellon University and supported and developed as a product by
 Transarc Corporation (now IBM Pittsburgh Labs). It offers a
@@ -356,10 +356,10 @@ client-server architecture for file sharing, providing location
 independence, scalability, and transparent migration capabilities for
 data.
 
-This package provides compatibility symlinks for transarc layout.
-It is completely optional, and is only necessary if transarc layout
+This package provides compatibility symlinks for legacy layout.
+It is completely optional, and is only necessary if legacy layout
 is needed. It will create symlinks only for directories.
-This package is for the server part (/usr/afs/)
+This package is for the legacy server part (/usr/afs/)
 
 %endif
 
@@ -646,14 +646,14 @@ install -D -m 644 %{S:47} %{buildroot}%{_prefix}/lib/firewalld/services/
 
 
 #
-# client-transarc
+# client-compat
 
 mkdir -p %{buildroot}/usr/vice
 ln -s %{viceetcdir} %{buildroot}/usr/vice/etc
 ln -s %{vicecachedir} %{buildroot}/usr/vice/cache
 
 #
-# server-transarc
+# server-compat
 
 mkdir -p %{buildroot}/usr/afs
 ln -s %{afslogsdir} %{buildroot}/usr/afs/logs
@@ -1148,12 +1148,12 @@ dkms remove -m %{name} -v %{version} --rpm_safe_upgrade --all ||:
 %{_libdir}/openafs/libkopenafs.so
 %endif
 
-%files client-transarc
+%files client-compat
 %defattr(-,root,root)
 %{_prefix}/vice/etc
 %{_prefix}/vice/cache
 
-%files server-transarc
+%files server-compat
 %defattr(-,root,root)
 %{_prefix}/afs/etc
 %{_prefix}/afs/logs
