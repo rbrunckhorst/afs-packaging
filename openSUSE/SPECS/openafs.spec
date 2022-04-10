@@ -32,6 +32,10 @@
 #
 %define build_userspace_on_cmdline %{?build_userspace:1}%{!?build_userspace:0}
 %define build_kernel_modules_on_cmdline %{?build_kernel_modules:1}%{!?build_kernel_modules:0}
+
+# optional define kernelvers to verify later if building of kmp packages match the given
+# kernel-version (ex: 5.3.18-150300.59.54)
+# if kernelvers is empty no check will be done
 %define kernelvers %{?kernvers}
 
 # package-wide definitions here
@@ -70,7 +74,7 @@
 %define build_kernel_modules 0
 %endif
 
-# used for %setup only
+# used for %%setup only
 # leave upstream tar-balls untouched for integrity checks.
 
 # update with the version in the tar files (e.g. 1.8.8.1-8-gl18924 )
@@ -471,7 +475,7 @@ for flavor in %flavors_to_build; do
     krel=$(make -si -C /usr/src/linux-obj/%_target_cpu/$flavor/ ARCH=x86 kernelrelease 2>/dev/null)
     kver=${krel%%-*}
     if [ "$kver" != %{kernelvers} ]; then 
-        echo "ERROR: Kernel-version check $kver failed."; 
+        echo "ERROR: Kernel-version check $kver failed ( %{kernelvers} != $kver ).";
         exit 1
     fi
     fi
@@ -655,10 +659,10 @@ ln -s %{afslocaldir}/db %{buildroot}/usr/afs/db
 #
 # client|server-compat
 
-# ln -s %%{_libdir}/openafs/libafshcrypto.so.2.0.0 %%{buildroot}/%{_libdir}/libafshcrypto.so.2.0.0
-# ln -s %%{_libdir}/openafs/libafshcrypto.so.2 %%{buildroot}/%{_libdir}/libafshcrypto.so.2
-# ln -s %%{_libdir}/openafs/librokenafs.so.2.0.0 %%{buildroot}/%{_libdir}/librokenafs.so.2.0.0
-# ln -s %%{_libdir}/openafs/librokenafs.so.2 %%{buildroot}/%{_libdir}/librokenafs.so.2
+# ln -s %%{_libdir}/openafs/libafshcrypto.so.2.0.0 %%{buildroot}/%%{_libdir}/libafshcrypto.so.2.0.0
+# ln -s %%{_libdir}/openafs/libafshcrypto.so.2 %%{buildroot}/%%{_libdir}/libafshcrypto.so.2
+# ln -s %%{_libdir}/openafs/librokenafs.so.2.0.0 %%{buildroot}/%%{_libdir}/librokenafs.so.2.0.0
+# ln -s %%{_libdir}/openafs/librokenafs.so.2 %%{buildroot}/%%{_libdir}/librokenafs.so.2
 
 #
 # general cleanup
